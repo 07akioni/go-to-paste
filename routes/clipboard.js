@@ -10,8 +10,15 @@ function getRandomShareCode () {
   return Math.floor(Math.random() * 90000 + 10000)
 }
 
+function getCurrentLeftTime (model) {
+  let ret = Math.floor(model.dataValues.currentValidScope - ((new Date()).getTime() - model.dataValues.createdAt.getTime()) / 1000)
+  return ret > 0 ? ret : 0
+}
 
-router.post('/uploadtest', upload.single('file'), async function (req, res, next) {
+/*
+ * upload an attachment for a clipboard
+ */
+router.post('/file', upload.single('file'), async function (req, res, next) {
   
   let attachment = await Attachment.create({
     originalName: req.file.originalname,
@@ -44,8 +51,11 @@ router.post('/uploadtest', upload.single('file'), async function (req, res, next
   
   clipboard.setAttachments([attachment])
   
+  console.log(attachment.dataValues)
+
   res.send({
-    status: 'SUC'
+    status: 'SUC',
+    data: attachment.dataValues
   })
 })
 
@@ -148,11 +158,6 @@ router.put('/textcontent', function (req, res, next) {
     })
 })
 
-function getCurrentLeftTime (model) {
-  let ret = Math.floor(model.dataValues.currentValidScope - ((new Date()).getTime() - model.dataValues.createdAt.getTime()) / 1000)
-  return ret > 0 ? ret : 0
-}
-
 /*
  * change the valid scope of a clipboard
  */
@@ -229,7 +234,7 @@ router.post(/\/new/, async function (req, res, next) {
 })
 
 
-router.post(/\/posttest/, function (req, res, next) {
+router.post('/', function (req, res, next) {
   Clipboard
     .create({
       shareCode: req.body['shareCode'],
@@ -243,7 +248,7 @@ router.post(/\/posttest/, function (req, res, next) {
     })
 });
 
-router.get(/\/gettest/, function (req, res, next) { // 五位数字
+router.get('/', function (req, res, next) { // 五位数字
   Clipboard
     .findAll({
       include: [ Attachment ],
